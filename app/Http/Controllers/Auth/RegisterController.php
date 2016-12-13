@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Http\Request;
 use App\User;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\RegistersUsers;
+//use Illuminate\Support\Facades\Redirect;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Mail;
 
 class RegisterController extends Controller
 {
@@ -27,7 +31,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
@@ -67,5 +71,24 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
         ]);
+    }
+
+    /* Переопределяем метод register */
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        event(new Registered($user = $this->create($request->all())));
+        Mail::send('emails.send', ['title' => 'Test', 'message' => 'Message'], function ($message)
+        {
+            $message->from('wolfsz@yandex.ru', 'Scotch.IO');
+            $message->to('wolfsz@yandex.ru');
+        });
+        return redirect('/');
+
+        //$this->guard()->login($user);
+
+        //return $this->registered($request, $user) ?: redirect($this->redirectPath());
+
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -36,4 +38,15 @@ class LoginController extends Controller
     {
         $this->middleware('guest', ['except' => 'logout']);
     }
+
+    /* переопределяем стандартный метод login */
+    public function login(Request $request)
+    {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'active' => 1]))
+        {
+            // Authentication passed...
+            return redirect()->intended('/admin');
+        }
+    }
+
 }
